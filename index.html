@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>BoursePulse AI v2.6.0 — دستیار هوشمند بورس</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BoursePulse v2.6" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#090d16" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="logo_B_v2.6.0.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="logo_B_v2.6.0.png" />
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #11192c;
+      --card-2: #17223b;
+      --text: #f3f6fc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --border: rgba(255, 255, 255, 0.09);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      padding: calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 32px);
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Vazirmatn", sans-serif;
+    }
+    .container { max-width: 1280px; margin: 0 auto; }
+    .topbar {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo-box {
+      width: 48px; height: 48px; border-radius: 13px; overflow: hidden;
+      border: 1px solid rgba(56, 189, 248, 0.45); flex-shrink: 0; background: #10182a;
+    }
+    .logo-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .app-title { font-size: 1.12rem; font-weight: 800; }
+    .badge {
+      background: rgba(56, 189, 248, 0.16); color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 999px;
+      padding: 2px 9px; font-size: 0.72rem; font-weight: 700;
+    }
+    .badge.ok {
+      background: rgba(34, 197, 94, 0.16); color: #86efac; border-color: rgba(34, 197, 94, 0.4);
+    }
+    .subtitle { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    select, input, button {
+      background: var(--card-2); color: var(--text); border: 1px solid var(--border);
+      border-radius: 10px; padding: 8px 11px; font-size: 0.84rem;
+    }
+    button { cursor: pointer; font-weight: 600; }
+    button.primary { background: var(--accent); color: #041019; border: none; font-weight: 800; }
+    button.active-pill { border-color: var(--accent); background: rgba(56, 189, 248, 0.18); }
+    .layout { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
+    @media (min-width: 920px) {
+      .layout.split-wide { grid-template-columns: 1.55fr 1fr; }
+    }
+    .ticker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 12px; }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px;
+    }
+    .card.selected { border-color: var(--accent); }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .mt-8 { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .sym-fa { font-size: 1.2rem; font-weight: 900; }
+    .muted { color: var(--muted); font-size: 0.8rem; }
+    .pos { color: var(--green); font-weight: 700; }
+    .neg { color: var(--red); font-weight: 700; }
+    .neu { color: var(--amber); font-weight: 700; }
+    .kv { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .kv:last-child { border-bottom: none; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; margin-top: 8px; }
+    .switch-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.84rem;
+    }
+    .switch-row:last-child { border-bottom: none; }
+    .reminder-item {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      background: var(--card-2); border-radius: 10px; padding: 8px 10px; margin-top: 8px; font-size: 0.82rem;
+    }
+    .banner {
+      background: rgba(34, 197, 94, 0.14); border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #dcfce7; border-radius: 12px; padding: 10px 12px; font-size: 0.82rem; margin-top: 10px; display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="appRoot">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo-box">
+          <img src="logo_B_v2.6.0.png" alt="BoursePulse AI Logo B" />
+        </div>
+        <div>
+          <div class="title-row">
+            <span class="app-title" id="appTitle">BoursePulse AI</span>
+            <span class="badge">v2.6.0</span>
+            <span class="badge ok" id="iosReadyBadge">iOS Home Screen PWA</span>
+          </div>
+          <div class="subtitle" id="subTitle">Tehran Stock Exchange &amp; IFB • Runs Directly on iPhone/iPad (No Mac Needed)</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="Search فولاد..." oninput="render()" />
+        <select id="horizonSel" onchange="updateSetting('horizon', this.value)">
+          <option value="short_term" data-en="Short-Term" data-fa="کوتاه‌مدت">Short-Term</option>
+          <option value="long_term" data-en="Long-Term" data-fa="بلندمدت">Long-Term</option>
+        </select>
+        <select id="riskSel" onchange="updateSetting('risk', this.value)">
+          <option value="conservative" data-en="Conservative" data-fa="کم‌ریسک">Conservative</option>
+          <option value="balanced" data-en="Balanced" data-fa="متعادل">Balanced</option>
+          <option value="aggressive" data-en="Aggressive" data-fa="پرریسک">Aggressive</option>
+        </select>
+        <button id="currBtn" onclick="toggleCurrency()">IRT</button>
+        <button id="watchBtn" onclick="toggleWatchOnly()">⭐ Watchlist</button>
+        <button id="splitBtn" onclick="toggleSplitView()">iPad Split</button>
+        <button id="notifBtn" onclick="toggleBackgroundAlerts()">🔔 Lock/Closed Alerts</button>
+        <button class="primary" id="langBtn" onclick="toggleLang()">فا</button>
+      </div>
+    </div>
+
+    <div class="banner" id="toastBanner"></div>
+
+    <div class="layout split-wide" id="mainLayout">
+      <div>
+        <div class="ticker-grid" id="tickerGrid"></div>
+      </div>
+
+      <div>
+        <div class="card" id="detailCard"></div>
+
+        <div class="card mt-12">
+          <div class="row">
+            <strong id="prefHeading">Persistence &amp; Lock-Screen Notifications</strong>
+            <button id="saveNowBtn" onclick="manualFlushSave()">Save Now</button>
+          </div>
+
+          <div class="switch-row">
+            <span id="lblAutoSaveSwitch">Save settings when switching between apps or closing the app</span>
+            <input type="checkbox" id="chkAutoSave" onchange="toggleAutoSaveOnLifecycle(this.checked)" />
+          </div>
+
+          <div class="switch-row">
+            <span id="lblBgNotifSwitch">Enable alerts &amp; reminders when closed or device locked</span>
+            <input type="checkbox" id="chkBgNotif" onchange="toggleBgNotifOption(this.checked)" />
+          </div>
+
+          <div class="muted mt-8" id="pushHint">
+            Open in Safari on iPhone/iPad → Share (□↑) → Add to Home Screen. On iOS 16.4+, allow Notifications for Home Screen alerts and reminders.
+          </div>
+        </div>
+
+        <div class="card mt-12">
+          <div class="row">
+            <strong id="calcHeading">Position &amp; Risk Calculator</strong>
+            <span class="muted" id="calcRiskTag"></span>
+          </div>
+          <div class="form-grid">
+            <div>
+              <label class="muted" id="lblCap">Capital (IRR)</label>
+              <input type="number" id="calcCap" oninput="saveCalcInputs()" />
+            </div>
+            <div>
+              <label class="muted" id="lblEntry">Entry (IRR)</label>
+              <input type="number" id="calcEntry" oninput="saveCalcInputs()" />
+            </div>
+            <div>
+              <label class="muted" id="lblStop">Stop-Loss (IRR)</label>
+              <input type="number" id="calcStop" oninput="saveCalcInputs()" />
+            </div>
+          </div>
+          <div class="kv mt-8">
+            <span id="lblShares">Recommended Shares</span>
+            <strong id="outShares">0</strong>
+          </div>
+          <div class="kv">
+            <span id="lblAlloc">Allocated Capital</span>
+            <strong id="outAlloc">0</strong>
+          </div>
+        </div>
+
+        <div class="card mt-12">
+          <div class="row">
+            <strong id="remHeading">Alerts &amp; Reminders</strong>
+            <span class="badge ok" id="remBadge">Enabled</span>
+          </div>
+          <div class="form-grid">
+            <input type="text" id="remNote" placeholder="Reminder note (e.g. Check فولاد)" />
+            <input type="number" id="remDelaySec" value="10" min="2" max="86400" title="Delay in seconds" />
+            <button class="primary" id="addRemBtn" onclick="addReminder()">+ Add Reminder</button>
+          </div>
+          <div id="remindersList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "boursepulse_ios_pwa_v260";
+
+    const DEFAULT_STATE = {
+      version: "2.6.0",
+      lang: "en",
+      currency: "irt",
+      horizon: "short_term",
+      risk: "balanced",
+      watchOnly: false,
+      splitWide: true,
+      saveOnSwitchOrClose: true,
+      notifyWhenClosedOrLocked: true,
+      selectedSymbol: "فولاد",
+      watchlist: ["فولاد", "عیار", "اخزا۲۱۱"],
+      calc: { capitalIrr: 5000000000, entryIrr: 4820, stopIrr: 4600 },
+      reminders: []
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return structuredClone(DEFAULT_STATE);
+        return { ...structuredClone(DEFAULT_STATE), ...JSON.parse(raw) };
+      } catch (e) {
+        return structuredClone(DEFAULT_STATE);
+      }
+    }
+
+    let STATE = loadState();
+
+    function writeStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE));
+      } catch (e) {}
+    }
+
+    function persistIfEnabled() {
+      if (STATE.saveOnSwitchOrClose) {
+        writeStorage();
+      }
+    }
+
+    function manualFlushSave() {
+      writeStorage();
+      showBanner(STATE.lang === "fa" ? "تنظیمات و یادآورها ذخیره شدند." : "Settings & reminders saved.");
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        persistIfEnabled();
+        processDueReminders(true);
+      } else {
+        processDueReminders(false);
+      }
+    });
+    window.addEventListener("pagehide", () => {
+      persistIfEnabled();
+      processDueReminders(true);
+    });
+    window.addEventListener("beforeunload", () => {
+      persistIfEnabled();
+    });
+
+    const MARKET_DATA = [
+      { sym: "فولاد", en: "Mobarakeh Steel", fa: "فولاد مبارکه اصفهان", priceIrr: 4820, chg: 2.85, sig: "BUY", power: "1.68x", baseVolPct: 154.2, noteEn: "Strong real buyer inflow above base volume.", noteFa: "قدرت خریدار حقیقی بالا همراه با عبور از حجم مبنا." },
+      { sym: "خودرو", en: "Iran Khodro", fa: "ایران خودرو", priceIrr: 2610, chg: -1.45, sig: "SELL", power: "0.78x", baseVolPct: 110.7, noteEn: "Legal supply pressure near resistance.", noteFa: "فشار عرضه در محدوده مقاومتی." },
+      { sym: "فملی", en: "National Copper", fa: "ملی صنایع مس ایران", priceIrr: 7940, chg: 2.15, sig: "BUY", power: "1.54x", baseVolPct: 129.1, noteEn: "Positive monthly Codal production trend.", noteFa: "روند مثبت تولید در گزارش ماهانه کدال." },
+      { sym: "شپنا", en: "Isfahan Refining", fa: "پالایش نفت اصفهان", priceIrr: 5310, chg: 0.76, sig: "HOLD", power: "1.21x", baseVolPct: 111.8, noteEn: "Steady refining margin; watch volume.", noteFa: "حاشیه پالایش باثبات؛ حجم را بررسی کنید." },
+      { sym: "وبملت", en: "Bank Mellat", fa: "بانک ملت", priceIrr: 3490, chg: -0.85, sig: "HOLD", power: "0.92x", baseVolPct: 115.8, noteEn: "Consolidation near support zone.", noteFa: "نوسان در محدوده حمایتی." },
+      { sym: "شستا", en: "SSIC", fa: "سرمایه‌گذاری تامین اجتماعی", priceIrr: 2180, chg: 1.40, sig: "BUY", power: "1.35x", baseVolPct: 126.2, noteEn: "Holding dividend inflows across subsidiaries.", noteFa: "دریافت سود تقسیمی شرکت‌های زیرمجموعه." },
+      { sym: "عیار", en: "Ayar Gold ETF", fa: "صندوق طلای عیار", priceIrr: 54200, chg: 1.92, sig: "BUY", power: "1.42x", baseVolPct: 100.0, noteEn: "Gold hedge demand active; check NAV.", noteFa: "تقاضای پوشش تورم طلا؛ حباب NAV بررسی شود." },
+      { sym: "اهرم", en: "Ahrom Leveraged ETF", fa: "صندوق اهرمی اهرم", priceIrr: 22450, chg: 3.40, sig: "BUY", power: "1.85x", baseVolPct: 100.0, noteEn: "High momentum leverage; keep tight stop.", noteFa: "اهرم بالا؛ حد ضرر را رعایت کنید." },
+      { sym: "اخزا۲۱۱", en: "Treasury Bill 211", fa: "اسناد خزانه ۲۱۱", priceIrr: 864000, chg: 0.11, sig: "HOLD", power: "1.12x", baseVolPct: 100.0, noteEn: "Fixed-income instrument for low-risk allocation.", noteFa: "ابزار درآمد ثابت کم‌ریسک." }
+    ];
+
+    function showBanner(msg) {
+      const el = document.getElementById("toastBanner");
+      el.textContent = msg;
+      el.style.display = "block";
+      setTimeout(() => { el.style.display = "none"; }, 3600);
+    }
+
+    function fmtMoney(irr) {
+      const v = STATE.currency === "irt" ? Math.round(irr / 10) : Math.round(irr);
+      const unit = STATE.lang === "fa"
+        ? (STATE.currency === "irt" ? "تومان" : "ریال")
+        : STATE.currency.toUpperCase();
+      return v.toLocaleString("en-US") + " " + unit;
+    }
+
+    function updateSetting(key, val) {
+      STATE[key] = val;
+      persistIfEnabled();
+      render();
+    }
+
+    function toggleAutoSaveOnLifecycle(checked) {
+      STATE.saveOnSwitchOrClose = checked;
+      writeStorage();
+      render();
+    }
+
+    async function toggleBgNotifOption(checked) {
+      STATE.notifyWhenClosedOrLocked = checked;
+      if (checked && "Notification" in window && Notification.permission === "default") {
+        try {
+          await Notification.requestPermission();
+        } catch (e) {}
+      }
+      persistIfEnabled();
+      render();
+    }
+
+    async function toggleBackgroundAlerts() {
+      const next = !STATE.notifyWhenClosedOrLocked;
+      await toggleBgNotifOption(next);
+      showBanner(STATE.lang === "fa"
+        ? (next ? "هشدارها در حالت بسته بودن اپ و قفل صفحه فعال شد." : "هشدارها غیرفعال شد.")
+        : (next ? "Closed-app & lock-screen alerts enabled." : "Alerts disabled."));
+    }
+
+    function toggleLang() {
+      STATE.lang = STATE.lang === "en" ? "fa" : "en";
+      document.documentElement.lang = STATE.lang;
+      document.documentElement.dir = STATE.lang === "fa" ? "rtl" : "ltr";
+      persistIfEnabled();
+      render();
+    }
+
+    function toggleCurrency() {
+      STATE.currency = STATE.currency === "irt" ? "irr" : "irt";
+      persistIfEnabled();
+      render();
+    }
+
+    function toggleWatchOnly() {
+      STATE.watchOnly = !STATE.watchOnly;
+      persistIfEnabled();
+      render();
+    }
+
+    function toggleSplitView() {
+      STATE.splitWide = !STATE.splitWide;
+      persistIfEnabled();
+      render();
+    }
+
+    function toggleStar(sym, ev) {
+      ev.stopPropagation();
+      if (STATE.watchlist.includes(sym)) {
+        STATE.watchlist = STATE.watchlist.filter(x => x !== sym);
+      } else {
+        STATE.watchlist.push(sym);
+      }
+      persistIfEnabled();
+      render();
+    }
+
+    function selectTicker(sym) {
+      STATE.selectedSymbol = sym;
+      persistIfEnabled();
+      render();
+    }
+
+    function dispatchNotification(title, body) {
+      if (!STATE.notifyWhenClosedOrLocked) return;
+      showBanner(`🔔 ${title}: ${body}`);
+      if ("Notification" in window && Notification.permission === "granted") {
+        try {
+          new Notification(title, {
+            body,
+            icon: "logo_B_v2.6.0.png",
+            badge: "logo_B_v2.6.0.png",
+            tag: "boursepulse-ios-v260"
+          });
+        } catch (e) {}
+      }
+    }
+
+    function addReminder() {
+      const noteEl = document.getElementById("remNote");
+      const delayEl = document.getElementById("remDelaySec");
+      const text = noteEl.value.trim() || (STATE.lang === "fa" ? `یادآور نماد ${STATE.selectedSymbol}` : `Alert for ${STATE.selectedSymbol}`);
+      const delaySec = Math.max(2, parseInt(delayEl.value || "10", 10));
+      const id = String(Date.now());
+      const triggerAt = Date.now() + delaySec * 1000;
+      STATE.reminders.push({ id, text, triggerAt, fired: false });
+      noteEl.value = "";
+      persistIfEnabled();
+      renderReminders();
+      showBanner(STATE.lang === "fa" ? `یادآور پس از ${delaySec} ثانیه فعال می‌شود` : `Reminder scheduled in ${delaySec}s`);
+    }
+
+    function processDueReminders(fromBackground) {
+      if (!STATE.notifyWhenClosedOrLocked) return;
+      const now = Date.now();
+      let changed = false;
+      for (const r of STATE.reminders) {
+        if (!r.fired && now >= r.triggerAt) {
+          r.fired = true;
+          changed = true;
+          dispatchNotification(
+            STATE.lang === "fa" ? "یادآور بورس‌پالس" : "BoursePulse Reminder",
+            r.text
+          );
+        }
+      }
+      if (changed) {
+        persistIfEnabled();
+        if (!fromBackground) renderReminders();
+      }
+    }
+
+    function renderReminders() {
+      const isFa = STATE.lang === "fa";
+      const box = document.getElementById("remindersList");
+      if (!STATE.reminders.length) {
+        box.innerHTML = `<div class="muted mt-8">${isFa ? "یادآوری ثبت نشده است." : "No reminders set."}</div>`;
+        return;
+      }
+      box.innerHTML = STATE.reminders.map(r => {
+        const st = r.fired ? (isFa ? "ارسال شد" : "Triggered") : (isFa ? "در انتظار" : "Pending");
+        return `
+          <div class="reminder-item">
+            <span>${r.text}</span>
+            <span class="badge ${r.fired ? "ok" : ""}">${st}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function saveCalcInputs() {
+      STATE.calc.capitalIrr = Number(document.getElementById("calcCap").value || 0);
+      STATE.calc.entryIrr = Number(document.getElementById("calcEntry").value || 0);
+      STATE.calc.stopIrr = Number(document.getElementById("calcStop").value || 0);
+      persistIfEnabled();
+      renderCalc();
+    }
+
+    function renderCalc() {
+      const riskMap = { conservative: 0.01, balanced: 0.02, aggressive: 0.035 };
+      const pct = riskMap[STATE.risk] || 0.02;
+      const diff = Math.abs(STATE.calc.entryIrr - STATE.calc.stopIrr);
+      let shares = diff > 0 ? Math.floor((STATE.calc.capitalIrr * pct) / diff) : 0;
+      if (shares * STATE.calc.entryIrr > STATE.calc.capitalIrr && STATE.calc.entryIrr > 0) {
+        shares = Math.floor(STATE.calc.capitalIrr / STATE.calc.entryIrr);
+      }
+      const allocIrr = Math.max(0, shares * STATE.calc.entryIrr);
+      document.getElementById("calcRiskTag").textContent = `${(pct * 100).toFixed(1)}%`;
+      document.getElementById("outShares").textContent = shares.toLocaleString("en-US");
+      document.getElementById("outAlloc").textContent = fmtMoney(allocIrr);
+    }
+
+    function render() {
+      const isFa = STATE.lang === "fa";
+      document.documentElement.lang = STATE.lang;
+      document.documentElement.dir = isFa ? "rtl" : "ltr";
+
+      document.getElementById("appTitle").textContent = isFa ? "دستیار هوشمند بورس" : "BoursePulse AI";
+      document.getElementById("subTitle").textContent = isFa
+        ? "بورس و فرابورس • آماده اجرا در آیفون و آیپد بدون نیاز به مک"
+        : "TSE & IFB • Ready on iPhone/iPad (No Mac Needed)";
+      document.getElementById("iosReadyBadge").textContent = isFa ? "PWA آماده iOS" : "iOS Home Screen PWA";
+      document.getElementById("langBtn").textContent = isFa ? "EN" : "فا";
+      document.getElementById("currBtn").textContent = STATE.currency === "irt" ? (isFa ? "تومان" : "IRT") : (isFa ? "ریال" : "IRR");
+      document.getElementById("watchBtn").textContent = STATE.watchOnly ? (isFa ? "⭐ همه" : "⭐ All") : (isFa ? "⭐ دیده‌بان" : "⭐ Watchlist");
+      document.getElementById("splitBtn").classList.toggle("active-pill", STATE.splitWide);
+      document.getElementById("mainLayout").classList.toggle("split-wide", STATE.splitWide);
+
+      document.getElementById("horizonSel").value = STATE.horizon;
+      document.getElementById("riskSel").value = STATE.risk;
+      document.querySelectorAll("select option").forEach(o => { o.textContent = isFa ? o.dataset.fa : o.dataset.en; });
+
+      document.getElementById("prefHeading").textContent = isFa ? "گزینه‌های ذخیره تنظیمات و هشدارها" : "Persistence & Lock-Screen Notifications";
+      document.getElementById("saveNowBtn").textContent = isFa ? "ذخیره اکنون" : "Save Now";
+      document.getElementById("lblAutoSaveSwitch").textContent = isFa
+        ? "ذخیره تنظیمات هنگام جابه‌جایی بین برنامه‌ها یا بستن اپ"
+        : "Save settings when switching between apps or closing the app";
+      document.getElementById("lblBgNotifSwitch").textContent = isFa
+        ? "فعال‌سازی اعلان هشدارها و یادآورها در زمان بسته بودن اپ یا قفل بودن دستگاه"
+        : "Enable alerts & reminders when app is closed or device is locked";
+      document.getElementById("pushHint").textContent = isFa
+        ? "در Safari آیفون/آیپد باز کنید ← دکمه اشتراک‌گذاری (□↑) ← Add to Home Screen. در iOS 16.4+ مجوز اعلان را فعال کنید."
+        : "Open in Safari on iPhone/iPad → Share (□↑) → Add to Home Screen. On iOS 16.4+, allow Notifications for Home Screen alerts and reminders.";
+
+      document.getElementById("chkAutoSave").checked = STATE.saveOnSwitchOrClose;
+      document.getElementById("chkBgNotif").checked = STATE.notifyWhenClosedOrLocked;
+
+      document.getElementById("calcHeading").textContent = isFa ? "ماشین‌حساب حجم و ریسک" : "Position & Risk Calculator";
+      document.getElementById("lblCap").textContent = isFa ? "سرمایه (ریال)" : "Capital (IRR)";
+      document.getElementById("lblEntry").textContent = isFa ? "ورود (ریال)" : "Entry (IRR)";
+      document.getElementById("lblStop").textContent = isFa ? "حد ضرر (ریال)" : "Stop-Loss (IRR)";
+      document.getElementById("lblShares").textContent = isFa ? "تعداد پیشنهادی" : "Recommended Shares";
+      document.getElementById("lblAlloc").textContent = isFa ? "مبلغ تخصیص" : "Allocated Capital";
+
+      document.getElementById("calcCap").value = STATE.calc.capitalIrr;
+      document.getElementById("calcEntry").value = STATE.calc.entryIrr;
+      document.getElementById("calcStop").value = STATE.calc.stopIrr;
+
+      document.getElementById("remHeading").textContent = isFa ? "هشدارها و یادآورها" : "Alerts & Reminders";
+      document.getElementById("remBadge").textContent = STATE.notifyWhenClosedOrLocked ? (isFa ? "فعال" : "Enabled") : (isFa ? "غیرفعال" : "Off");
+      document.getElementById("addRemBtn").textContent = isFa ? "+ ثبت یادآور" : "+ Add Reminder";
+
+      const q = document.getElementById("searchInput").value.trim();
+      const filtered = MARKET_DATA.filter(item => {
+        const wOk = !STATE.watchOnly || STATE.watchlist.includes(item.sym);
+        const sOk = !q || item.sym.includes(q);
+        return wOk && sOk;
+      });
+
+      document.getElementById("tickerGrid").innerHTML = filtered.map(item => {
+        const isSel = item.sym === STATE.selectedSymbol;
+        const starred = STATE.watchlist.includes(item.sym);
+        const chgCls = item.chg >= 0 ? "pos" : "neg";
+        const sigCls = item.sig === "BUY" ? "pos" : (item.sig === "SELL" ? "neg" : "neu");
+        return `
+          <div class="card ${isSel ? "selected" : ""}" onclick="selectTicker('${item.sym}')">
+            <div class="row">
+              <div>
+                <div class="sym-fa">${item.sym}</div>
+                <div class="muted">${isFa ? item.fa : item.en}</div>
+              </div>
+              <button onclick="toggleStar('${item.sym}', event)">${starred ? "⭐" : "☆"}</button>
+            </div>
+            <div class="row mt-8">
+              <strong>${fmtMoney(item.priceIrr)}</strong>
+              <span class="${chgCls}">${item.chg >= 0 ? "+" : ""}${item.chg.toFixed(2)}%</span>
+            </div>
+            <div class="row mt-8">
+              <span class="${sigCls}">${item.sig}</span>
+              <span class="muted">${isFa ? "قدرت خریدار:" : "Buyer Power:"} ${item.power}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const active = MARKET_DATA.find(x => x.sym === STATE.selectedSymbol) || MARKET_DATA[0];
+      document.getElementById("detailCard").innerHTML = `
+        <div class="row">
+          <div>
+            <div class="sym-fa">${active.sym}</div>
+            <div class="muted">${isFa ? active.fa : active.en}</div>
+          </div>
+          <button class="primary" onclick="dispatchNotification('${active.sym}', '${fmtMoney(active.priceIrr)} | ${active.sig}')">
+            ${isFa ? "ارسال هشدار" : "Send Alert"}
+          </button>
+        </div>
+        <div class="mt-12">
+          <div class="kv"><span>${isFa ? "قیمت آخرین معامله" : "Last Price"}</span><strong>${fmtMoney(active.priceIrr)}</strong></div>
+          <div class="kv"><span>${isFa ? "قدرت خریدار حقیقی" : "Real Buyer Power"}</span><strong>${active.power}</strong></div>
+          <div class="kv"><span>${isFa ? "حجم مبنا" : "Base Volume"}</span><strong>${active.baseVolPct}%</strong></div>
+          <div class="kv"><span>${isFa ? "تحلیل" : "Insight"}</span><span>${isFa ? active.noteFa : active.noteEn}</span></div>
+        </div>
+      `;
+
+      renderCalc();
+      renderReminders();
+    }
+
+    setInterval(() => processDueReminders(false), 1000);
+    render();
+  </script>
+</body>
+</html>
